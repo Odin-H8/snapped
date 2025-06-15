@@ -1,13 +1,11 @@
 package com.example.snap
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.internal.writeJson
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -52,6 +50,7 @@ object Messages {
     }
 }
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 class Message(
     val sender: String,

@@ -21,6 +21,10 @@ func MockInit() {
 }
 
 func Messages(engine *gin.Engine) {
+	go HandleBroadcast()
+
+	engine.GET("/ws", handleWebsocket)
+
 	engine.GET("/msg", func(c *gin.Context) {
 		c.JSON(http.StatusOK, messages)
 	})

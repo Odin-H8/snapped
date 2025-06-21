@@ -13,14 +13,41 @@ import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
 class MessagesViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages
 
+    private val client = OkHttpClient()
+    private lateinit var webSocket: WebSocket
+
     init {
-        println("messagesviemodel is init'ed")
         loadMessages()
+        connectWebsocket()
+    }
+
+    private fun connectWebsocket() {
+        val request = Request.Builder()
+            .url("ws://192.168.68.50:8080/ws")
+            .build()
+
+        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                println("Websocket opened")
+            }
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                println("Websocket message recived: $text")
+                val message = Json.decodeFromString<Message>(text)
+                _messages.value = _messages.value + message
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                t.printStackTrace()
+            }
+        })
     }
 
     fun loadMessages() {
@@ -50,23 +77,12 @@ class MessagesViewModel : ViewModel() {
     }
 
     fun sendMessage(msg: Message) {
-        viewModelScope.launch {
-            try {
-                val client = OkHttpClient()
-                val jsonString = Json.encodeToString(msg)
-                val request = Request.Builder()
-                    .url("http://192.168.68.50:8080/msg")
-                    .method("POST", jsonString.toRequestBody())
-                    .build()
+        val json = Json.encodeToString(msg)
+        webSocket.send(json)
+    }
 
-                withContext(Dispatchers.IO) {
-                    client.newCall(request).execute()
-                }
-
-                loadMessages()
-            } catch (e: Exception) {
-                println(e.message)
-            }
-        }
+    override fun onCleared() {
+        super.onCleared()
+        webSocket.close(1000, "viewModel cleared...???")
     }
 }

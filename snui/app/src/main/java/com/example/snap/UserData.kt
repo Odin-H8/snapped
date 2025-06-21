@@ -1,5 +1,6 @@
 package com.example.snap
 
 object UserData {
-    var CurrentUser: String = "Martyna"
+    var Username: String = ""
+    var AuthToken: String = ""
 }

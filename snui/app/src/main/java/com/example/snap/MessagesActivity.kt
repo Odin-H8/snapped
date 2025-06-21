@@ -13,7 +13,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,7 +61,7 @@ fun MessagesScreen(
             reverseLayout = false,
         ) {
             items(messages) { message ->
-                if (UserData.CurrentUser == message.sender) {
+                if (UserData.Username == message.sender) {
                     Row(
                         modifier = modifier
                             .fillMaxWidth()
@@ -128,7 +127,7 @@ fun MessagesScreen(
                     onMessageSent(
                         Message(
                             msg = inputText,
-                            sender = UserData.CurrentUser,
+                            sender = UserData.Username,
                             recipient = "Martyna",
                         )
                     )

@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SnapTheme {
-                MessagesActivity(Modifier)
+                ChatScreen()
             }
         }
     }

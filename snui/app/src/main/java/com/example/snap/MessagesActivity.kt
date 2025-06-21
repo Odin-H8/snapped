@@ -1,6 +1,5 @@
 package com.example.snap
 
-import android.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,11 +14,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,20 +27,28 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 
 @Composable
-fun MessagesActivity(modifier: Modifier) {
-    val messages: MutableList<Message> = remember { mutableStateListOf()}
-    var msg by remember { mutableStateOf("") }
+fun ChatScreen() {
+    val viewModel: MessagesViewModel = viewModel()
+    val messages by viewModel.messages.collectAsState()
 
-    val coroutineScope = rememberCoroutineScope()
+    MessagesScreen(
+        modifier = Modifier,
+        messages = messages,
+        onMessageSent = { msg: Message -> viewModel.sendMessage(msg) }
+    )
+}
 
-    LaunchedEffect(Unit) {
-        Messages.updateMsgs()
-        messages.addAll(Messages.msgs)
-    }
+@Composable
+fun MessagesScreen(
+    modifier: Modifier,
+    messages: List<Message>,
+    onMessageSent: (Message) -> Unit,
+) {
+    var inputText by remember { mutableStateOf("") }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -56,8 +62,7 @@ fun MessagesActivity(modifier: Modifier) {
             reverseLayout = false,
         ) {
             items(messages) { message ->
-
-                if (Messages.CurrentUser == message.sender) {
+                if (UserData.CurrentUser == message.sender) {
                     Row(
                         modifier = modifier
                             .fillMaxWidth()
@@ -108,8 +113,8 @@ fun MessagesActivity(modifier: Modifier) {
             TextField(
                 modifier = modifier
                     .fillMaxWidth(),
-                value = msg,
-                onValueChange = { msgText -> msg = msgText },
+                value = inputText,
+                onValueChange = { msgText -> inputText = msgText },
                 label = { Text("Enter message") }
             )
         }
@@ -120,14 +125,14 @@ fun MessagesActivity(modifier: Modifier) {
                 modifier = modifier
                     .fillMaxWidth(),
                 onClick = { ->
-                    coroutineScope.launch {
-                        Messages.sendMsg(Message(Messages.CurrentUser, "Martyna", msg))
-                        Messages.updateMsgs()
-                        messages.clear()
-                        messages.addAll(Messages.msgs)
-
-                        msg = ""
-                    }
+                    onMessageSent(
+                        Message(
+                            msg = inputText,
+                            sender = UserData.CurrentUser,
+                            recipient = "Martyna",
+                        )
+                    )
+                    inputText = ""
                 }
             ) {
                 Text("Send msg")
